@@ -1,3 +1,4 @@
+// REF: https://developers.google.com/gmail/api/quickstart/nodejs?hl=zh-TW
 const fs = require('fs')
 const readline = require('readline')
 const google = require('googleapis')
@@ -6,7 +7,8 @@ const path = require('path')
 
 // If modifying these scopes, delete your previously saved credentials
 // at ~/.credentials/gmail-nodejs-quickstart.json
-const SCOPES = ['https://www.googleapis.com/auth/gmail.readonly']
+// const SCOPES = ['https://www.googleapis.com/auth/gmail.readonly']
+const SCOPES = ['https://www.googleapis.com/auth/gmail.compose']
 const TOKEN_DIR = path.join((process.env.HOME || process.env.HOMEPATH || process.env.USERPROFILE), '.credentials')
 const TOKEN_PATH = path.join(TOKEN_DIR, 'gmail-nodejs-quickstart.json')
 
@@ -18,7 +20,8 @@ fs.readFile('client_secret.json', (err, content) => {
   }
   // Authorize a client with the loaded credentials, then call the
   // Gmail API.
-  authorize(JSON.parse(content), listLabels)
+  // authorize(JSON.parse(content), listLabels)
+  authorize(JSON.parse(content), sendMessage)
 })
 
 /**
@@ -83,7 +86,7 @@ function getNewToken (oauth2Client, callback) {
  *
  * @param {Object} token The token to store to disk.
  */
-function storeToken(token) {
+function storeToken (token) {
   try {
     fs.mkdirSync(TOKEN_DIR)
   } catch (err) {
@@ -95,29 +98,40 @@ function storeToken(token) {
   console.log('Token stored to ' + TOKEN_PATH)
 }
 
-/**
- * Lists the labels in the user's account.
- *
- * @param {google.auth.OAuth2} auth An authorized OAuth2 client.
- */
-function listLabels (auth) {
-  let gmail = google.gmail('v1')
-  gmail.users.labels.list({
-    auth: auth,
-    userId: 'me'
-  }, (err, response) => {
+function sendMessage (auth) {
+  const gmail = google.gmail('v1')
+  let email_lines = []
+  let from = 'ntuaha@gmail.com'
+  let to = 'ntuaha@gmail.com'
+  let subject = 'New future subject here2'
+  let content = ['And the body text goes here', '<b>And the bold text goes here</b>']
+  email_lines.push('From: ' + from)
+  email_lines.push('To: ' + to)
+  email_lines.push('Content-type: text/html;charset=utf-8')
+  email_lines.push('MIME-Version: 1.0')
+  email_lines.push('Subject: ' + subject)
+  email_lines.push('')
+  content.forEach((line) => {
+    email_lines.push(line)
+  })
+  let email = email_lines.join('\r\n').trim()
+
+  let base64EncodedEmail = new Buffer(email).toString('base64').replace(/\+/g, '-').replace(/\//g, '_')
+  console.log(base64EncodedEmail)
+
+  const sendDone = (err, response) => {
     if (err) {
       console.log('The API returned an error: ' + err)
       return
     }
-    var labels = response.labels
-    if (labels.length === 0) {
-      console.log('No labels found.')
-    } else {
-      console.log('Labels:')
-      labels.forEach((label) => {
-        console.log('- %s', label.name)
-      })
+    console.log('send mail success', response)
+  }
+
+  gmail.users.messages.send({
+    auth: auth,
+    userId: 'me',
+    resource: {
+      raw: base64EncodedEmail
     }
-  })
+  }, sendDone)
 }
