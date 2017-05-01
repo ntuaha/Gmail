@@ -103,20 +103,23 @@ function sendMessage (auth) {
   let email_lines = []
   let from = 'ntuaha@gmail.com'
   let to = 'ntuaha@gmail.com'
-  let subject = 'New future subject here2'
-  let content = ['And the body text goes here', '<b>And the bold text goes here</b>']
+  let subject = '你說什麼'
+  let content = ['A是嘛', '<b>And the bold text goes here</b>']
   email_lines.push('From: ' + from)
   email_lines.push('To: ' + to)
-  email_lines.push('Content-type: text/html;charset=utf-8')
+  email_lines.push('Content-type: text/html;charset=utf8')
   email_lines.push('MIME-Version: 1.0')
-  email_lines.push('Subject: ' + subject)
+  //email_lines.push('Subject:' + subject)
+  email_lines.push('Subject:' +"=?UTF-8?B?"+new Buffer(subject,'utf8').toString('base64')+"?=")
+  
   email_lines.push('')
   content.forEach((line) => {
     email_lines.push(line)
   })
   let email = email_lines.join('\r\n').trim()
-
-  let base64EncodedEmail = new Buffer(email).toString('base64').replace(/\+/g, '-').replace(/\//g, '_')
+  console.log(email_lines.map((line) => new Buffer(line).toString('base64')))
+  console.log(new Buffer(email,'utf8').toString('base64'))
+  let base64EncodedEmail = new Buffer(email,'utf8').toString('base64').replace(/\+/g, '-').replace(/\//g, '_')
   console.log(base64EncodedEmail)
 
   const sendDone = (err, response) => {
