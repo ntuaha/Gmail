@@ -109,7 +109,7 @@ function sendMessage (auth) {
   email_lines.push('To: ' + to)
   email_lines.push('Content-type: text/html;charset=utf8')
   email_lines.push('MIME-Version: 1.0')
-  //email_lines.push('Subject:' + subject)
+  // http://dchesmis.blogspot.tw/2016/06/e-mailutf8.html
   email_lines.push('Subject:' +"=?UTF-8?B?"+new Buffer(subject,'utf8').toString('base64')+"?=")
   
   email_lines.push('')
